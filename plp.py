@@ -14,7 +14,7 @@ def get_venv_executables(venv_dir):
     else:  # Unix-like systems (Linux, macOS)
         pip_executable = os.path.join(venv_dir, 'bin', 'pip')
         python_executable = os.path.join(venv_dir, 'bin', 'python')
-    return pip_executable, python_executable
+    return python_executable, pip_executable
 
 
 parser = argparse.ArgumentParser(prog='plp', description='A pip wrapper acting like npm')
