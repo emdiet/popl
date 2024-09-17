@@ -7,6 +7,16 @@ import subprocess
 import json
 import venv
 
+def get_venv_executables(venv_dir):
+    if os.name == 'nt':  # Windows
+        pip_executable = os.path.join(venv_dir, 'Scripts', 'pip.exe')
+        python_executable = os.path.join(venv_dir, 'Scripts', 'python.exe')
+    else:  # Unix-like systems (Linux, macOS)
+        pip_executable = os.path.join(venv_dir, 'bin', 'pip')
+        python_executable = os.path.join(venv_dir, 'bin', 'python')
+    return pip_executable, python_executable
+
+
 parser = argparse.ArgumentParser(prog='plp', description='A pip wrapper acting like npm')
 subparsers = parser.add_subparsers(dest='command')
 
@@ -57,7 +67,7 @@ def plp_install(packages, global_install):
 
     # Install packages locally
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
-    pip_executable = os.path.join(venv_dir, 'bin', 'pip')  # Adjust for Windows if necessary
+    _, pip_executable = get_venv_executables(venv_dir)
     if not os.path.exists(pip_executable):
         print('Error: Virtual environment not found. Run plp init again.')
         sys.exit(1)
@@ -104,7 +114,7 @@ def plp_run(script, script_args):
         print('Error: No plp project found.')
         sys.exit(1)
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
-    python_executable = os.path.join(venv_dir, 'bin', 'python')  # Adjust for Windows if necessary
+    python_executable, _ = get_venv_executables(venv_dir)
     if not os.path.exists(python_executable):
         print('Error: Virtual environment not found. Run plp init again.')
         sys.exit(1)
