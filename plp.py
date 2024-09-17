@@ -41,9 +41,9 @@ def plp_init():
 install_parser = subparsers.add_parser('install', help='Install packages')
 install_parser.add_argument('packages', nargs='*', help='Packages to install')
 install_parser.add_argument('--global', dest='global_install', action='store_true', help='Install globally')
+install_parser.add_argument('pip_args', nargs=argparse.REMAINDER, help='Additional arguments for pip')
 
-# plp install no args
-def plp_install(packages, global_install):
+def plp_install(packages, global_install, pip_args):
     # Ensure project is initialized
     project_file = find_project_file()
     if not project_file:
@@ -62,7 +62,7 @@ def plp_install(packages, global_install):
         packages = list(project_data['dependencies'].values())
 
     if global_install:
-        subprocess.run([sys.executable, '-m', 'pip', 'install'] + packages)
+        subprocess.run([sys.executable, '-m', 'pip', 'install'] + packages + pip_args)
         return
 
     # Install packages locally
@@ -72,7 +72,7 @@ def plp_install(packages, global_install):
         print('Error: Virtual environment not found. Run plp init again.')
         sys.exit(1)
     # Install packages using the virtual environment's pip
-    pip_args = [pip_executable, 'install'] + packages
+    pip_args = [pip_executable, 'install'] + packages + pip_args
     subprocess.run(pip_args)
 
     # Update project dependencies if new packages were provided
@@ -104,7 +104,7 @@ def setup_environment():
     local_packages_dir = os.path.join(os.path.dirname(project_file), 'local_packages')
     sys.path.insert(0, local_packages_dir)
 
-run_parser = subparsers.add_parser('run', help='Run a script with plp environment')
+run_parser = subparsers.add_parser('run', help='Run a python script with plp environment')
 run_parser.add_argument('script', help='Script to run')
 run_parser.add_argument('script_args', nargs=argparse.REMAINDER, help='Arguments for the script')
 
@@ -132,7 +132,7 @@ def main():
     if args.command == 'init':
         plp_init()
     elif args.command == 'install':
-        plp_install(args.packages, args.global_install)
+        plp_install(args.packages, args.global_install, args.pip_args)
     elif args.command == 'run':
         plp_run(args.script, args.script_args)
     else:
