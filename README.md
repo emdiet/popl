@@ -1,12 +1,11 @@
 # plp
-plp: python lone projects. pip, but more like npm
+plp: pip local projects. a pip wrapper, but behaving more like npm
 
 ## What is this?
 
-This is a pip wrapper that keeps all dependencies in your project direcory, and manages virtual enviroments behind the scenes.
+This is a pip wrapper that keeps all dependencies in your project direcory, and manages virtual enviroments behind the scenes so you don't have to deal with any of that noise.
 
 It's like npm(lite), but for python.
-
 
 ## Usage
 
@@ -56,10 +55,14 @@ add `.venv` to your `.gitignore` file
 
 your buddies can just work with the requirements.txt file if they don't want to use plp.
 
+## Notes on: uninstalling everything
+
+just delete the project directory. packages might still temporarily reside in the *python download cache* (https://pip.pypa.io/en/stable/topics/caching/) (could be cleaned with `pip cache purge` (note: pip, not plp!)), but it should expire on its own.
+
 ## Dependencies
 
-- python
+- python 3.7+
 
 ## Feature Requests
 
-please open an issue, thx :)
+please open an issue (https://github.com/emdiet/plp/issues), thx :)

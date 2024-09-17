@@ -1,0 +1,8 @@
+{
+    "name": "plp",
+    "dependencies": {
+        "setuptools": "setuptools",
+        "wheel": "wheel",
+        "twine": "twine"
+    }
+}

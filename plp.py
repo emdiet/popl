@@ -214,6 +214,42 @@ def plp_run(script, script_args):
     # Execute the script
     subprocess.run(command)
 
+exec_parser = subparsers.add_parser('exec', help='Execute a command in the plp environment')
+exec_parser.add_argument('exec_command', nargs=argparse.REMAINDER, help='Command to execute in the plp environment')
+
+def plp_exec(command_args):
+    if not command_args:
+        print('Error: No command provided to execute.')
+        sys.exit(1)
+
+    project_file = find_project_file()
+    if not project_file:
+        print('Error: No plp project found.')
+        sys.exit(1)
+
+    venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
+    python_executable, _ = get_venv_executables(venv_dir)
+    if not os.path.exists(python_executable):
+        print('Error: Virtual environment not found. Run plp init again.')
+        sys.exit(1)
+
+    # Prepare the environment variables to simulate activation
+    if os.name == 'nt':
+        venv_bin_dir = os.path.join(venv_dir, 'Scripts')
+    else:
+        venv_bin_dir = os.path.join(venv_dir, 'bin')
+
+    env = os.environ.copy()
+    env['PATH'] = venv_bin_dir + os.pathsep + env.get('PATH', '')
+
+    # Include any necessary environment variables specific to virtual environments
+    env['VIRTUAL_ENV'] = venv_dir
+
+    # Execute the command
+    subprocess.run(command_args, env=env, shell=True)
+
+
+
 def main():
     args = parser.parse_args()
     if args.command == 'init':
@@ -222,6 +258,8 @@ def main():
         plp_install(args.packages, args.global_install, args.pip_args)
     elif args.command == 'run':
         plp_run(args.script, args.script_args)
+    elif args.command == 'exec':
+        plp_exec(args.exec_command)
     else:
         parser.print_help()
 
