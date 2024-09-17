@@ -1,15 +1,15 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='plp',
+    name='popl',
     version='0.1.0',
     description='A pip wrapper behaving like npm',
     author='emdiet',
-    url='https://github.com/emdiet/plp',
+    url='https://github.com/emdiet/popl',
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'plp=plp:main'
+            'popl=popl:main'
         ],
     },
     classifiers=[

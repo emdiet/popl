@@ -17,14 +17,14 @@ def get_venv_executables(venv_dir):
     return python_executable, pip_executable
 
 
-parser = argparse.ArgumentParser(prog='plp', description='A pip wrapper acting like npm')
+parser = argparse.ArgumentParser(prog='popl', description='A pip wrapper acting like npm')
 subparsers = parser.add_subparsers(dest='command')
 
-init_parser = subparsers.add_parser('init', help='Initialize a new plp project')
-init_parser.add_argument('--import', dest="import_requirements_from_requirements", action='store_true', help='import requirements from requirements.txt into plp.json. Only necessary if you want to delete or clean requirements.txt')
+init_parser = subparsers.add_parser('init', help='Initialize a new popl project')
+init_parser.add_argument('--import', dest="do_import", action='store_true', help='import requirements from requirements.txt into popl.json. Only necessary if you want to delete or clean requirements.txt')
 
-def plp_init(args):
-    project_file = 'plp.json'
+def popl_init(do_import):
+    project_file = 'popl.json'
     requirements_file = 'requirements.txt'
     venv_dir = os.path.join(os.getcwd(), '.venv')
 
@@ -37,7 +37,7 @@ def plp_init(args):
     if not os.path.exists(venv_dir):
         # Create virtual environment
         venv.create(venv_dir, with_pip=True)
-        print('Initialized empty plp virtual environment.')
+        print('Initialized empty popl virtual environment.')
     else:
         print('Virtual environment already exists. Skipping creation.')
     
@@ -49,13 +49,13 @@ def plp_init(args):
         }
         with open(project_file, 'w') as f:
             json.dump(project_data, f, indent=4)
-        print('Initialized empty plp.json.')
+        print('Initialized empty popl.json.')
     else:
-        print('plp.json found. skipping creation.')
+        print('popl.json found. skipping creation.')
     
     # requirements file setup
     if not os.path.exists(requirements_file):
-        if args.import_requirements_from_requirements:
+        if do_import:
             # print warning message
             print('warning: --import flag is set but requirements.txt not found. Ignoring flag.')
 
@@ -63,59 +63,59 @@ def plp_init(args):
             f.write('# this is your requirements lock file\n')
             print('Initialized empty requirements.txt.')
     else:
-        if args.import_requirements_from_requirements:
+        if do_import:
             # print notice
-            print('Importing requirements from requirements.txt into plp.json.')
+            print('Importing requirements from requirements.txt into popl.json.')
             with open(requirements_file, 'r') as f:
                 lines = f.readlines()
                 for line in lines:
                     if not line.startswith('#'):
                         project_data['dependencies'][line.strip()] = line.strip()
-            # merge dependencies, favoring plp.json
+            # merge dependencies, favoring popl.json
             with open(project_file, 'w') as f:
                 json.dump(project_data, f, indent=4)
-            print('Imported requirements from requirements.txt into plp.json.')
+            print('Imported requirements from requirements.txt into popl.json.')
         else:
-            print('requirements.txt found. Use `plp install` to install dependencies.')
+            print('requirements.txt found. Use `popl install` to install dependencies.')
     
 
 
-def init_from_requirements(requirements_file, write_to_plp_dependencies=False):
-    project_file = 'plp.json'
+def init_from_requirements(requirements_file, write_to_popl_dependencies=False):
+    project_file = 'popl.json'
     project_data = {
         'name': os.path.basename(os.getcwd()),
         'dependencies': [],
-        'comment': "Note: core dependencies could not be determined from requirements.txt. 'plp install' still works though.",
+        'comment': "Note: core dependencies could not be determined from requirements.txt. 'popl install' still works though.",
         'from_requirements_no_core_dependencies': True
     }
 
     # Read dependencies from requirements.txt
-    if write_to_plp_dependencies:
+    if write_to_popl_dependencies:
         with open(requirements_file, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 if not line.startswith('#'):
                     project_data['dependencies'].append(line.strip())
         
-    # Create plp.json with dependencies from requirements.txt
+    # Create popl.json with dependencies from requirements.txt
     with open(project_file, 'w') as f:
         json.dump(project_data, f, indent=4)
-    print('Initialized plp project from requirements.txt.')
+    print('Initialized popl project from requirements.txt.')
 
 install_parser = subparsers.add_parser('install', help='Install packages')
 install_parser.add_argument('packages', nargs='*', help='Packages to install')
 install_parser.add_argument('--global', dest='global_install', action='store_true', help='Install globally')
 install_parser.add_argument('pip_args', nargs=argparse.REMAINDER, help='Additional arguments for pip')
 
-def plp_install(packages, global_install, pip_args, project_file=None, save=True, update_lock=True):
+def popl_install(packages, global_install, pip_args, project_file=None, save=True, update_lock=True):
     # Ensure project is initialized
     project_file = find_project_file() if not project_file else project_file
     if not project_file:
         # check if requirements.txt exists and initialize from it
         if os.path.exists('requirements.txt'):
-            plp_init({'skip_confirmation': False})
+            popl_init({'skip_confirmation': False})
         else:
-            print('Error: No plp project found. Run plp init first.')
+            print('Error: No popl project found. Run popl init first.')
             sys.exit(1)
 
     # Load project data
@@ -130,11 +130,11 @@ def plp_install(packages, global_install, pip_args, project_file=None, save=True
         if os.path.exists('requirements.txt'):
             with open('requirements.txt', 'r') as f:
                 locked_packages = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-                plp_install(locked_packages, False, pip_args, project_file, save=False, update_lock=False)
+                popl_install(locked_packages, False, pip_args, project_file, save=False, update_lock=False)
 
-        # Install all additional dependencies from plp.json, pip will ignore already installed packages
+        # Install all additional dependencies from popl.json, pip will ignore already installed packages
         desired_packages = list(project_data['dependencies'].values())
-        plp_install(desired_packages, False, pip_args, project_file, save=False, update_lock=True)
+        popl_install(desired_packages, False, pip_args, project_file, save=False, update_lock=True)
         return
 
     # Install packages globally
@@ -146,7 +146,7 @@ def plp_install(packages, global_install, pip_args, project_file=None, save=True
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
     _, pip_executable = get_venv_executables(venv_dir)
     if not os.path.exists(pip_executable):
-        print('Error: Virtual environment not found. Run plp init again.')
+        print('Error: Virtual environment not found. Run popl init again.')
         sys.exit(1)
     # Install packages using the virtual environment's pip
     pip_args = [pip_executable, 'install'] + packages + pip_args
@@ -175,7 +175,7 @@ def plp_install(packages, global_install, pip_args, project_file=None, save=True
 def find_project_file():
     current_dir = os.getcwd()
     while True:
-        project_file = os.path.join(current_dir, 'plp.json')
+        project_file = os.path.join(current_dir, 'popl.json')
         if os.path.exists(project_file):
             return project_file
         new_dir = os.path.dirname(current_dir)
@@ -186,51 +186,62 @@ def find_project_file():
 def setup_environment():
     project_file = find_project_file()
     if not project_file:
-        print('Error: No plp project found.')
+        print('Error: No popl project found.')
         sys.exit(1)
     local_packages_dir = os.path.join(os.path.dirname(project_file), 'local_packages')
     sys.path.insert(0, local_packages_dir)
 
-run_parser = subparsers.add_parser('run', help='Run a python script with plp environment')
-run_parser.add_argument('script', help='Script to run')
+run_parser = subparsers.add_parser('run', help='Run a python script with popl environment')
+run_parser.add_argument('-m', '--module', dest='module_mode', action='store_true', help='Run as a module (python -m)')
+run_parser.add_argument('script', help='Script or module to run')
 run_parser.add_argument('script_args', nargs=argparse.REMAINDER, help='Arguments for the script')
 
-def plp_run(script, script_args):
+
+def popl_run(module_mode, script, script_args):
     project_file = find_project_file()
     if not project_file:
-        print('Error: No plp project found.')
+        print('Error: No popl project found.')
         sys.exit(1)
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
     python_executable, _ = get_venv_executables(venv_dir)
     if not os.path.exists(python_executable):
-        print('Error: Virtual environment not found. Run plp init again.')
+        print('Error: Virtual environment not found. Run popl init again.')
         sys.exit(1)
-    script_path = os.path.abspath(script)
-    if not os.path.exists(script_path):
-        print(f'Error: Script {script} not found.')
-        sys.exit(1)
+    
     # Prepare the command
-    command = [python_executable, script_path] + script_args
-    # Execute the script
+    # Handle running a module with -m
+    if module_mode:
+        # Prepare the command to run the module
+        command = [python_executable, '-m', script] + script_args
+    else:
+        # Handle running a Python script file
+        script_path = os.path.abspath(script)
+        if not os.path.exists(script_path):
+            print(f'Error: Script {script} not found.')
+            sys.exit(1)
+        # Prepare the command
+        command = [python_executable, script_path] + script_args
+    
+    # Execute the script or module
     subprocess.run(command)
 
-exec_parser = subparsers.add_parser('exec', help='Execute a command in the plp environment')
-exec_parser.add_argument('exec_command', nargs=argparse.REMAINDER, help='Command to execute in the plp environment')
+exec_parser = subparsers.add_parser('exec', help='Execute a command in the popl environment')
+exec_parser.add_argument('exec_command', nargs=argparse.REMAINDER, help='Command to execute in the popl environment')
 
-def plp_exec(command_args):
+def popl_exec(command_args):
     if not command_args:
         print('Error: No command provided to execute.')
         sys.exit(1)
 
     project_file = find_project_file()
     if not project_file:
-        print('Error: No plp project found.')
+        print('Error: No popl project found.')
         sys.exit(1)
 
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
     python_executable, _ = get_venv_executables(venv_dir)
     if not os.path.exists(python_executable):
-        print('Error: Virtual environment not found. Run plp init again.')
+        print('Error: Virtual environment not found. Run popl init again.')
         sys.exit(1)
 
     # Prepare the environment variables to simulate activation
@@ -253,13 +264,13 @@ def plp_exec(command_args):
 def main():
     args = parser.parse_args()
     if args.command == 'init':
-        plp_init(args)
+        popl_init(args.do_import)
     elif args.command == 'install':
-        plp_install(args.packages, args.global_install, args.pip_args)
+        popl_install(args.packages, args.global_install, args.pip_args)
     elif args.command == 'run':
-        plp_run(args.script, args.script_args)
+        popl_run(args.module_mode, args.script, args.script_args)
     elif args.command == 'exec':
-        plp_exec(args.exec_command)
+        popl_exec(args.exec_command)
     else:
         parser.print_help()
 
