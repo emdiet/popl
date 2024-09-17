@@ -104,12 +104,14 @@ def init_from_requirements(requirements_file, write_to_popl_dependencies=False):
 
 install_parser = subparsers.add_parser('install', help='Install packages')
 install_parser.add_argument('packages', nargs='*', help='Packages to install')
-install_parser.add_argument('--global', dest='global_install', action='store_true', help='Install globally')
 install_parser.add_argument('pip_args', nargs=argparse.REMAINDER, help='Additional arguments for pip')
 
-def popl_install(packages, global_install, pip_args, project_file=None, save=True, update_lock=True):
+# Alias for install
+subparsers.add_parser('i', help='Alias for install')
+
+def popl_install(packages, pip_args):
     # Ensure project is initialized
-    project_file = find_project_file() if not project_file else project_file
+    project_file = find_project_file()
     if not project_file:
         # check if requirements.txt exists and initialize from it
         if os.path.exists('requirements.txt'):
@@ -117,6 +119,10 @@ def popl_install(packages, global_install, pip_args, project_file=None, save=Tru
         else:
             print('Error: No popl project found. Run popl init first.')
             sys.exit(1)
+    
+    # make deep copy of input args to save to popl.json
+    save = packages.copy()
+    
 
     # Load project data
     with open(project_file, 'r') as f:
@@ -129,18 +135,10 @@ def popl_install(packages, global_install, pip_args, project_file=None, save=Tru
         # install all dependencies from requirements.txt
         if os.path.exists('requirements.txt'):
             with open('requirements.txt', 'r') as f:
-                locked_packages = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-                popl_install(locked_packages, False, pip_args, project_file, save=False, update_lock=False)
+                packages = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
         # Install all additional dependencies from popl.json, pip will ignore already installed packages
-        desired_packages = list(project_data['dependencies'].values())
-        popl_install(desired_packages, False, pip_args, project_file, save=False, update_lock=True)
-        return
-
-    # Install packages globally
-    if global_install:
-        subprocess.run([sys.executable, '-m', 'pip', 'install'] + packages + pip_args)
-        return
+        packages += list(project_data['dependencies'].values())
 
     # Install packages locally
     venv_dir = os.path.join(os.path.dirname(project_file), '.venv')
@@ -154,7 +152,7 @@ def popl_install(packages, global_install, pip_args, project_file=None, save=Tru
 
     # Update project dependencies if new packages were provided
     if save:
-        for package in packages:
+        for package in save:
             package_name = package.split('==')[0]
             project_data['dependencies'][package_name] = package
 
@@ -265,8 +263,8 @@ def main():
     args = parser.parse_args()
     if args.command == 'init':
         popl_init(args.do_import)
-    elif args.command == 'install':
-        popl_install(args.packages, args.global_install, args.pip_args)
+    elif args.command == 'install' or args.command == 'i':
+        popl_install(args.packages, args.pip_args)
     elif args.command == 'run':
         popl_run(args.module_mode, args.script, args.script_args)
     elif args.command == 'exec':

@@ -1,4 +1,7 @@
 {
     "name": "popl",
-    "dependencies": {}
+    "dependencies": {
+        "twine": "twine",
+        "build": "build"
+    }
 }
