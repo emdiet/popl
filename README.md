@@ -33,7 +33,10 @@ python ./popl.py install torch torchvision torchaudio --index-url https://downlo
 python ./popl.py run my_inference_script.py
 ```
 
-if your environment variables are set up "correctly"
+just works. (in windows). no need to activate virtual environments, no need to worry about global packages, no need to worry about system packages.
+
+ 
+alternatively, if your environment variables are set up "correctly", you can do
 ```powershell
 pip install popl
 popl init
@@ -41,7 +44,6 @@ popl install torch torchvision torchaudio --index-url https://download.pytorch.o
 popl run my_inference_script.py
 ```
 
- just works. (in windows). no need to activate virtual environments, no need to worry about global packages, no need to worry about system packages.
 
 ## Motivation
 
