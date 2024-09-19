@@ -1,5 +1,5 @@
 # popl
-popl: pip local projects. a pip wrapper, but behaving more like npm
+popl: pip populate local projects. a pip wrapper, but behaving more like npm
 
 ## What is this?
 
@@ -9,11 +9,21 @@ It's like npm(lite), but for python.
 
 ## Usage
 
+### Using popl.py in a directory
+
 1) have python/pip installed
 2) copy popl.py into your project directory
 3) inside your project directory run `python ./popl.py init`
 4) install packages like you would with pip: `python ./popl.py install <packages, args, etc.>`
 5) run your python scripts with `python ./popl.py run <script-name.py>`
+
+### Using pip
+
+1) ensure your environment variables are set correctly
+2) run `pip install popl`, globally if you like
+3) navigate to your project directory, and run `popl init`
+4) install packages like you would with pip: `popl install <packages, args, etc.>`
+5) run your python scripts with `popl run <script-name.py>`
 
 e.g.: 
 
@@ -21,6 +31,14 @@ e.g.:
 python ./popl.py init
 python ./popl.py install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 python ./popl.py run my_inference_script.py
+```
+
+if your environment variables are set up "correctly"
+```powershell
+pip install popl
+popl init
+popl install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+popl run my_inference_script.py
 ```
 
  just works. (in windows). no need to activate virtual environments, no need to worry about global packages, no need to worry about system packages.
